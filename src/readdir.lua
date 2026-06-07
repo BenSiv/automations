@@ -1,23 +1,23 @@
 -- read directory content
 
 require("utils").using("utils")
-local starts_with = require("string_utils").starts_with
+starts_with = require("string_utils").starts_with
 using("prettyprint")
-local lfs = require("lfs")
+lfs = require("lfs")
 
-local function get_content(directory)
-	local files = {hidden={}, visible={}}
-	local dirs = {hidden={}, visible={}}
+function get_content(directory)
+	files = {hidden={}, visible={}}
+	dirs = {hidden={}, visible={}}
 
-	local dir, err = pcall(lfs.dir, directory)
-    if not dir then
+	dir, err = pcall(lfs.dir, directory)
+    if dir == false then
         return nil
     end
 
     for entry in lfs.dir(directory) do
-        if entry ~= "." and entry ~= ".." then
-			local path = directory .. "/" .. entry
-            local mode = lfs.attributes(path, "mode")
+        if entry != "." and entry != ".." then
+			path = directory .. "/" .. entry
+            mode = lfs.attributes(path, "mode")
             if mode == "file" then
             	if starts_with(entry, ".") then
 	            	table.insert(files.hidden, entry)
@@ -34,22 +34,22 @@ local function get_content(directory)
         end
     end
 
-    local content = {files = files, dirs = dirs}
+    content = {files = files, dirs = dirs}
     sorted_content = deep_sort(content)
     return sorted_content
 end
 
-local function main()
-	local path = arg[1] or "."
-    local mode = lfs.attributes(path, "mode")
+function main()
+	path = arg[1] or "."
+    mode = lfs.attributes(path, "mode")
 
-    if not mode then
+    if mode == nil then
         color("Error: cannot access " .. path .. ": No such file or directory", "red")
     elseif mode == "file" then
         print(path)
     else
-        local content = get_content(path)
-        if not content then
+        content = get_content(path)
+        if content == nil then
             color("Error: could not read content of " .. path, "red")
         else
 
@@ -78,4 +78,3 @@ local function main()
 end
 
 main()
-

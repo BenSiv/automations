@@ -9,38 +9,38 @@ using("paths")
 --------------------------------------------------------------------------------
 
 -- Check if a git revision exists
-local function rev_exists(rev)
-    local _, success = exec_command(string.format("git rev-parse --quiet --verify %s 2>/dev/null", rev))
+function rev_exists(rev)
+    _, success = exec_command(string.format("git rev-parse --quiet --verify %s 2>/dev/null", rev))
     return success
 end
 
 -- Check if first commit is an ancestor of second
-local function is_ancestor(ancestor, descendant)
-    local _, success = exec_command(string.format("git merge-base --is-ancestor %s %s 2>/dev/null", ancestor, descendant))
+function is_ancestor(ancestor, descendant)
+    _, success = exec_command(string.format("git merge-base --is-ancestor %s %s 2>/dev/null", ancestor, descendant))
     return success
 end
 
-local function trim(s)
-    if not s then return nil end
-    return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+function trim(s)
+    if s == nil then return nil end
+    return (string.gsub(string.gsub(s, "^%s+", ""), "%s+$", ""))
 end
 
-local function ensure_git_repo()
-    local output, success = exec_command("git rev-parse --is-inside-work-tree 2>/dev/null")
-    if success and trim(output) == "true" then
+function ensure_git_repo()
+    output, success = exec_command("git rev-parse --is-inside-work-tree 2>/dev/null")
+    if success and (trim(output) == "true") then
         return true
     end
     print("Error: Not inside a git repository. Run this command from a repository directory.")
     return false
 end
 
-local function parse_options(argv, start_index, spec)
-    local opts = { _unknown = {} }
-    local i = start_index
+function parse_options(argv, start_index, spec)
+    opts = { _unknown = {} }
+    i = start_index
     while i <= #argv do
-        local argi = argv[i]
-        local def = spec[argi]
-        if def then
+        argi = argv[i]
+        def = spec[argi]
+        if def != nil then
             if def.has_value then
                 if i + 1 > #argv then
                     return nil, "Missing value for " .. argi
@@ -59,41 +59,41 @@ local function parse_options(argv, start_index, spec)
 end
 
 -- Check if working tree is clean (no staged or unstaged changes)
-local function is_worktree_clean()
-    local _, success = exec_command("git diff --quiet 2>/dev/null")
-    if not success then return false end
-    local _, success2 = exec_command("git diff --cached --quiet 2>/dev/null")
+function is_worktree_clean()
+    _, success = exec_command("git diff --quiet 2>/dev/null")
+    if success == false then return false end
+    _, success2 = exec_command("git diff --cached --quiet 2>/dev/null")
     return success2
 end
 
 -- Get current branch name
-local function get_current_branch()
-    local output, success = exec_command("git branch --show-current 2>/dev/null")
-    if success and output then
-        return output:gsub("%s+$", "")  -- trim trailing whitespace
+function get_current_branch()
+    output, success = exec_command("git branch --show-current 2>/dev/null")
+    if success and (output != nil) then
+        return string.gsub(output, "%s+$", "")  -- trim trailing whitespace
     end
     return nil
 end
 
-local function get_local_branches()
-    local output, success = exec_command('git for-each-ref refs/heads --format="%(refname:short)" 2>/dev/null')
-    if not success or not output then return {} end
-    local branches = {}
-    for line in output:gmatch("[^\r\n]+") do
-        if line ~= "" then table.insert(branches, line) end
+function get_local_branches()
+    output, success = exec_command('git for-each-ref refs/heads --format="%(refname:short)" 2>/dev/null')
+    if (success == false) or (output == nil) then return {} end
+    branches = {}
+    for line in string.gmatch(output, "[^\r\n]+") do
+        if line != "" then table.insert(branches, line) end
     end
     return branches
 end
 
-local function get_remote_branches(remote)
-    if not remote or remote == "" then return {} end
-    local output, success = exec_command(string.format(
+function get_remote_branches(remote)
+    if (remote == nil) or (remote == "") then return {} end
+    output, success = exec_command(string.format(
         'git for-each-ref refs/remotes/%s --format="%%(refname:short)" 2>/dev/null', remote
     ))
-    if not success or not output then return {} end
-    local branches = {}
-    for line in output:gmatch("[^\r\n]+") do
-        if line ~= "" and line ~= (remote .. "/HEAD") then
+    if (success == false) or (output == nil) then return {} end
+    branches = {}
+    for line in string.gmatch(output, "[^\r\n]+") do
+        if (line != "") and (line != (remote .. "/HEAD")) then
             table.insert(branches, line)
         end
     end
@@ -101,28 +101,28 @@ local function get_remote_branches(remote)
 end
 
 -- Get list of remotes
-local function get_remotes()
-    local output, success = exec_command("git remote 2>/dev/null")
-    if not success or not output then return {} end
-    local remotes = {}
-    for remote in output:gmatch("[^\r\n]+") do
+function get_remotes()
+    output, success = exec_command("git remote 2>/dev/null")
+    if (success == false) or (output == nil) then return {} end
+    remotes = {}
+    for remote in string.gmatch(output, "[^\r\n]+") do
         table.insert(remotes, remote)
     end
     return remotes
 end
 
 -- Get default branch for a remote (e.g., origin/HEAD -> origin/main)
-local function get_remote_head(remote)
-    local output, _ = exec_command(string.format("git symbolic-ref refs/remotes/%s/HEAD 2>/dev/null", remote))
-    if output and output ~= "" then
-        return output:gsub("%s+$", ""):gsub("^refs/remotes/", "")
+function get_remote_head(remote)
+    output, _ = exec_command(string.format("git symbolic-ref refs/remotes/%s/HEAD 2>/dev/null", remote))
+    if (output != nil) and (output != "") then
+        return string.gsub(string.gsub(output, "%s+$", ""), "^refs/remotes/", "")
     end
     return remote .. "/master"  -- fallback
 end
 
-local function resolve_remote_name(remote_name)
-    if remote_name and remote_name ~= "" then return remote_name end
-    local remotes = get_remotes()
+function resolve_remote_name(remote_name)
+    if (remote_name != nil) and (remote_name != "") then return remote_name end
+    remotes = get_remotes()
     for _, remote in ipairs(remotes) do
         if remote == "origin" then
             return "origin"
@@ -131,44 +131,44 @@ local function resolve_remote_name(remote_name)
     return remotes[1]
 end
 
-local function resolve_base_ref(base, remote_name)
-    if base and base ~= "" then return base end
+function resolve_base_ref(base, remote_name)
+    if (base != nil) and (base != "") then return base end
     if rev_exists("main") then return "main" end
     if rev_exists("master") then return "master" end
-    if remote_name and rev_exists(remote_name .. "/HEAD") then return remote_name .. "/HEAD" end
+    if (remote_name != nil) and rev_exists(remote_name .. "/HEAD") then return remote_name .. "/HEAD" end
     return "HEAD"
 end
 
-local function get_ahead_behind(base, branch)
-    local counts, ok = exec_command(
+function get_ahead_behind(base, branch)
+    counts, ok = exec_command(
         string.format("git rev-list --left-right --count %s...%s 2>/dev/null", base, branch)
     )
-    if not ok or not counts then return nil, nil end
-    local behind, ahead = counts:match("(%d+)%s+(%d+)")
+    if (ok == false) or (counts == nil) then return nil, nil end
+    behind, ahead = string.match(counts, "(%d+)%s+(%d+)")
     return tonumber(behind), tonumber(ahead)
 end
 
-local function get_upstream(branch)
-    local output, success = exec_command(
+function get_upstream(branch)
+    output, success = exec_command(
         string.format("git rev-parse --abbrev-ref --symbolic-full-name %s@{upstream} 2>/dev/null", branch)
     )
-    if success and output then
+    if success and (output != nil) then
         return trim(output)
     end
     return nil
 end
 
 -- Parse branch tracking info
-local function get_branch_info()
-    local output, success = exec_command(
+function get_branch_info()
+    output, success = exec_command(
         'git for-each-ref refs/heads --format="%(refname)|%(refname:short)|%(upstream)|%(upstream:short)|%(upstream:remotename)"'
     )
-    if not success or not output then return {} end
+    if (success == false) or (output == nil) then return {} end
     
-    local branches = {}
-    for line in output:gmatch("[^\r\n]+") do
-        local localref, branch, upstreamref, upstream, remote = line:match("([^|]*)|([^|]*)|([^|]*)|([^|]*)|([^|]*)")
-        if branch and branch ~= "" then
+    branches = {}
+    for line in string.gmatch(output, "[^\r\n]+") do
+        localref, branch, upstreamref, upstream, remote = string.match(line, "([^|]*)|([^|]*)|([^|]*)|([^|]*)|([^|]*)")
+        if (branch != nil) and (branch != "") then
             table.insert(branches, {
                 localref = localref,
                 branch = branch,
@@ -181,38 +181,38 @@ local function get_branch_info()
     return branches
 end
 
-local function list_branches_behind(opts)
-    local remote_name = nil
-    if opts.remote then
+function list_branches_behind(opts)
+    remote_name = nil
+    if opts.remote != nil then
         remote_name = resolve_remote_name(opts.remote_name)
-        if not remote_name then
+        if remote_name == nil then
             print("Error: No remotes found")
             return false
         end
         exec_command("git fetch --all --prune 2>/dev/null")
     end
 
-    local base = resolve_base_ref(opts.base, remote_name)
-    if not rev_exists(base) then
+    base = resolve_base_ref(opts.base, remote_name)
+    if rev_exists(base) == false then
         print(string.format("Error: Base ref '%s' not found", base))
         return false
     end
 
-    local branches = {}
+    branches = {}
     for _, branch in ipairs(get_local_branches()) do
         table.insert(branches, { name = branch, scope = "local" })
     end
-    if opts.remote then
+    if opts.remote != nil then
         for _, branch in ipairs(get_remote_branches(remote_name)) do
             table.insert(branches, { name = branch, scope = "remote" })
         end
     end
 
-    local results = {}
+    results = {}
     for _, item in ipairs(branches) do
-        if item.name ~= base then
-            local behind, ahead = get_ahead_behind(base, item.name)
-            if behind and ahead and behind > 0 and ahead > 0 then
+        if item.name != base then
+            behind, ahead = get_ahead_behind(base, item.name)
+            if (behind != nil) and (ahead != nil) and (behind > 0) and (ahead > 0) then
                 table.insert(results, { name = item.name, behind = behind, ahead = ahead, scope = item.scope })
             end
         end
@@ -237,31 +237,31 @@ local function list_branches_behind(opts)
     return true
 end
 
-local function update_branches_behind(opts)
-    local remote_name = nil
-    if opts.remote then
+function update_branches_behind(opts)
+    remote_name = nil
+    if opts.remote != nil then
         remote_name = resolve_remote_name(opts.remote_name)
-        if not remote_name then
+        if remote_name == nil then
             print("Error: No remotes found")
             return false
         end
         exec_command("git fetch --all --prune 2>/dev/null")
     end
 
-    local base = resolve_base_ref(opts.base, remote_name)
-    if not rev_exists(base) then
+    base = resolve_base_ref(opts.base, remote_name)
+    if rev_exists(base) == false then
         print(string.format("Error: Base ref '%s' not found", base))
         return false
     end
 
-    if not is_worktree_clean() then
+    if is_worktree_clean() == false then
         print("Error: Working tree has uncommitted changes. Please commit or stash before updating branches.")
         return false
     end
 
-    local candidates = {}
-    if opts.branch and opts.branch ~= "" then
-        if not rev_exists(opts.branch) then
+    candidates = {}
+    if (opts.branch != nil) and (opts.branch != "") then
+        if rev_exists(opts.branch) == false then
             print(string.format("Error: Branch '%s' not found", opts.branch))
             return false
         end
@@ -269,8 +269,8 @@ local function update_branches_behind(opts)
             print("Nothing to do: branch equals base")
             return true
         end
-        local behind, ahead = get_ahead_behind(base, opts.branch)
-        if behind and behind > 0 then
+        behind, ahead = get_ahead_behind(base, opts.branch)
+        if (behind != nil) and (behind > 0) then
             table.insert(candidates, { branch = opts.branch, behind = behind, ahead = ahead or 0 })
         else
             print(string.format("Branch '%s' is not behind '%s'.", opts.branch, base))
@@ -278,9 +278,9 @@ local function update_branches_behind(opts)
         end
     else
         for _, branch in ipairs(get_local_branches()) do
-            if branch ~= base then
-                local behind, ahead = get_ahead_behind(base, branch)
-                if behind and behind > 0 then
+            if branch != base then
+                behind, ahead = get_ahead_behind(base, branch)
+                if (behind != nil) and (behind > 0) then
                     table.insert(candidates, { branch = branch, behind = behind, ahead = ahead or 0 })
                 end
             end
@@ -299,28 +299,28 @@ local function update_branches_behind(opts)
         return a.behind > b.behind
     end)
 
-    local original_branch = get_current_branch()
+    original_branch = get_current_branch()
     exec_command("git switch --detach --quiet 2>/dev/null")
 
-    local updated = 0
-    local conflicts = 0
-    local pushed = 0
+    updated = 0
+    conflicts = 0
+    pushed = 0
     for _, item in ipairs(candidates) do
-        local branch = item.branch
-        local _, ok = exec_command(string.format("git switch %s --quiet 2>/dev/null", branch))
-        if not ok then
+        branch = item.branch
+        _, ok = exec_command(string.format("git switch %s --quiet 2>/dev/null", branch))
+        if ok == false then
             print(string.format("Error: Failed to switch to '%s'", branch))
         else
-            local _, merge_ok = exec_command(string.format("git merge --no-edit %s 2>/dev/null", base))
+            _, merge_ok = exec_command(string.format("git merge --no-edit %s 2>/dev/null", base))
             if merge_ok then
                 updated = updated + 1
                 print(string.format("Updated '%s' (behind %d, ahead %d)", branch, item.behind, item.ahead))
-                if opts.remote then
-                    local upstream = get_upstream(branch)
-                    if upstream then
-                        local up_remote = upstream:match("^([^/]+)/")
-                        if not remote_name or up_remote == remote_name then
-                            local _, push_ok = exec_command(string.format("git push %s %s 2>/dev/null", up_remote, branch))
+                if opts.remote != nil then
+                    upstream = get_upstream(branch)
+                    if upstream != nil then
+                        up_remote = string.match(upstream, "^([^/]+)/")
+                        if (remote_name == nil) or (up_remote == remote_name) then
+                            _, push_ok = exec_command(string.format("git push %s %s 2>/dev/null", up_remote, branch))
                             if push_ok then
                                 pushed = pushed + 1
                             else
@@ -341,13 +341,13 @@ local function update_branches_behind(opts)
         end
     end
 
-    if original_branch and original_branch ~= "" and rev_exists(original_branch) then
+    if (original_branch != nil) and (original_branch != "") and rev_exists(original_branch) then
         exec_command(string.format("git switch %s --quiet 2>/dev/null", original_branch))
     else
         exec_command("git switch main --quiet 2>/dev/null || git switch master --quiet 2>/dev/null")
     end
 
-    if opts.remote then
+    if opts.remote != nil then
         print(string.format("Done. Updated %d branch(es). Conflicts: %d. Pushed: %d.", updated, conflicts, pushed))
     else
         print(string.format("Done. Updated %d branch(es). Conflicts: %d.", updated, conflicts))
@@ -360,40 +360,40 @@ end
 -- Ported from: https://github.com/pallene-lang/pallene/blob/master/dev/git-sync
 --------------------------------------------------------------------------------
 
-local function git_sync()
+function git_sync()
     print("Fetching from all remotes...")
-    local output, success = exec_command("git fetch --all --prune")
-    if not success then
+    output, success = exec_command("git fetch --all --prune")
+    if success == false then
         print("Error: Failed to fetch from remotes")
         print(output or "")
         return false
     end
     
     -- Ensure remote HEAD exists for each remote
-    local remotes = get_remotes()
+    remotes = get_remotes()
     for _, remote in ipairs(remotes) do
-        if not rev_exists(remote .. "/HEAD") then
+        if rev_exists(remote .. "/HEAD") == false then
             print(string.format("Setting HEAD for remote '%s'...", remote))
             exec_command(string.format("git remote set-head %s --auto", remote))
         end
     end
     
     -- Save current branch
-    local old_branch = get_current_branch()
+    old_branch = get_current_branch()
     
     -- Switch to detached HEAD to allow updating current branch
     exec_command("git switch --detach --quiet 2>/dev/null")
     
     -- Process each local branch
-    local branches = get_branch_info()
+    branches = get_branch_info()
     for _, info in ipairs(branches) do
-        local branch = info.branch
-        local upstreamref = info.upstreamref
-        local upstream = info.upstream
-        local remote = info.remote
+        branch = info.branch
+        upstreamref = info.upstreamref
+        upstream = info.upstream
+        remote = info.remote
         
         -- Only process if tracking an upstream
-        if upstreamref and upstreamref ~= "" then
+        if (upstreamref != nil) and (upstreamref != "") then
             -- Check if upstream still exists
             if rev_exists(upstreamref) then
                 if is_ancestor(info.localref, upstreamref) then
@@ -409,7 +409,7 @@ local function git_sync()
                 end
             else
                 -- Upstream was deleted
-                local remote_head = get_remote_head(remote)
+                remote_head = get_remote_head(remote)
                 if is_ancestor(info.localref, "refs/remotes/" .. remote_head) then
                     print(string.format("Deleting merged branch '%s' (upstream '%s' was deleted)", branch, upstream))
                     exec_command(string.format("git branch -d %s 2>/dev/null", branch))
@@ -421,7 +421,7 @@ local function git_sync()
     end
     
     -- Return to original branch if it still exists
-    if old_branch and old_branch ~= "" then
+    if (old_branch != nil) and (old_branch != "") then
         if rev_exists(old_branch) then
             exec_command(string.format("git switch %s --quiet 2>/dev/null", old_branch))
         else
@@ -439,41 +439,39 @@ end
 -- Original commit/push functionality
 --------------------------------------------------------------------------------
 
-local function commit_and_push(args)
-    if not args.file and not args.message then
-        local status = exec_command("git status")
+function commit_and_push(args)
+    if (args.file == nil) and (args.message == nil) then
+        status = exec_command("git status")
         print(status)
         return nil
     end
 
-    if not args.message or args.message == "" then
+    if (args.message == nil) or (args.message == "") then
         print("Error: Commit message required (use -m or --message)")
         return nil
     end
     
-    local base_ref = resolve_base_ref(args.base, nil)
-    local branch = get_current_branch()
-    if branch and base_ref and branch == base_ref then
+    base_ref = resolve_base_ref(args.base, nil)
+    branch = get_current_branch()
+    if (branch != nil) and (base_ref != nil) and (branch == base_ref) then
         print(string.format("Warning: You are on base branch '%s'. Consider using a feature branch.", branch))
     end
     
-    local output, success
-
     args.file = args.file or "."
     output, success = exec_command(string.format("git add '%s'", args.file))
-    if not success then
+    if success == false then
         print(output or "Failed to add files")
         return output
     end
 
     output, success = exec_command(string.format("git commit -m '%s'", args.message))
-    if not success then
+    if success == false then
         print(output or "Failed to commit")
         return output
     end
 
     output, success = exec_command("git push")
-    if not success then
+    if success == false then
         print(output or "Failed to push")
         return output
     end
@@ -484,8 +482,8 @@ end
 --------------------------------------------------------------------------------
 -- Main CLI
 --------------------------------------------------------------------------------
-local function print_usage()
-    print([[
+function print_usage()
+    print("""
 Usage:
   repo <command> [subcommand] [flags]
 
@@ -511,43 +509,43 @@ Examples:
   repo behind update benchling-validations-gcp --remote
   repo commit -m "fix: adjust validation flow" -f .
   repo commit -m "chore: bump deps" --base main
-]])
+""")
 end
 
-local function print_behind_usage()
-    print([[
+function print_behind_usage()
+    print("""
 Usage:
   repo behind list [--remote] [--base <ref>] [--remote-name <name>]
   repo behind update [branch] [--remote] [--base <ref>] [--remote-name <name>]
-]])
+""")
 end
 
-local function main(argv)
-    local cmd = argv[1]
-    if not cmd or cmd == "help" or cmd == "-h" or cmd == "--help" then
+function main(argv)
+    cmd = argv[1]
+    if (cmd == nil) or (cmd == "help") or (cmd == "-h") or (cmd == "--help") then
         print_usage()
         return
     end
 
     if cmd == "behind" then
-        local sub = argv[2]
-        local spec = {
+        sub = argv[2]
+        spec = {
             ["--remote"] = { key = "remote", has_value = false },
             ["--base"] = { key = "base", has_value = true },
             ["--remote-name"] = { key = "remote_name", has_value = true },
             ["-h"] = { key = "help", has_value = false },
             ["--help"] = { key = "help", has_value = false },
         }
-        local opts, err = parse_options(argv, 3, spec)
-        if err then
+        opts, err = parse_options(argv, 3, spec)
+        if err != nil then
             print(err)
             return
         end
-        if opts.help or not sub then
+        if (opts.help != nil) or (sub == nil) then
             print_behind_usage()
             return
         end
-        if not ensure_git_repo() then
+        if ensure_git_repo() == false then
             return
         end
         if sub == "list" then
@@ -570,7 +568,7 @@ local function main(argv)
     end
 
     if cmd == "sync" then
-        if not ensure_git_repo() then
+        if ensure_git_repo() == false then
             return
         end
         git_sync()
@@ -578,7 +576,7 @@ local function main(argv)
     end
 
     if cmd == "commit" then
-        local spec = {
+        spec = {
             ["-f"] = { key = "file", has_value = true },
             ["--file"] = { key = "file", has_value = true },
             ["-m"] = { key = "message", has_value = true },
@@ -587,16 +585,16 @@ local function main(argv)
             ["-h"] = { key = "help", has_value = false },
             ["--help"] = { key = "help", has_value = false },
         }
-        local opts, err = parse_options(argv, 2, spec)
-        if err then
+        opts, err = parse_options(argv, 2, spec)
+        if err != nil then
             print(err)
             return
         end
-        if opts.help then
+        if opts.help != nil then
             print("Usage: repo commit -m <message> [-f <path>]")
             return
         end
-        if not ensure_git_repo() then
+        if ensure_git_repo() == false then
             return
         end
         if #opts._unknown > 0 then

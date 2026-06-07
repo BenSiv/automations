@@ -6,8 +6,11 @@ set -e
 
 cd "$(dirname "$0")/.."
 
+# Export LUA_PATH for luam libraries
+export LUA_PATH="$HOME/Projects/luam/lib/?.lua;;"
+
 echo "============================================================"
-echo "Running lua-automations test suite"
+echo "Running lua-automations test suite (using luam)"
 echo "============================================================"
 
 # Track overall results
@@ -20,7 +23,7 @@ run_test_file() {
     echo "Running: $test_file"
     echo "------------------------------------------------------------"
     
-    if lua "$test_file" 2>&1; then
+    if luam "$test_file" 2>&1; then
         echo "✓ $test_file completed"
     else
         echo "✗ $test_file had failures"

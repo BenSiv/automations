@@ -3,16 +3,16 @@
 
 require("utils").using("utils")
 
-local tests = {}
-local passed = 0
-local failed = 0
-local skipped = 0
+tests = {}
+passed = 0
+failed = 0
+skipped = 0
 
 --------------------------------------------------------------------------------
 -- Test Framework
 --------------------------------------------------------------------------------
 
-local function assert_equal(actual, expected, message)
+function assert_equal(actual, expected, message)
     if actual == expected then
         return true
     else
@@ -20,7 +20,7 @@ local function assert_equal(actual, expected, message)
     end
 end
 
-local function assert_true(value, message)
+function assert_true(value, message)
     if value then
         return true
     else
@@ -28,15 +28,15 @@ local function assert_true(value, message)
     end
 end
 
-local function assert_false(value, message)
-    if not value then
+function assert_false(value, message)
+    if value == false then
         return true
     else
         error(message or "Expected false, got true")
     end
 end
 
-local function assert_nil(value, message)
+function assert_nil(value, message)
     if value == nil then
         return true
     else
@@ -44,25 +44,25 @@ local function assert_nil(value, message)
     end
 end
 
-local function assert_not_nil(value, message)
-    if value ~= nil then
+function assert_not_nil(value, message)
+    if value != nil then
         return true
     else
         error(message or "Expected non-nil value")
     end
 end
 
-local function assert_contains(str, substring, message)
-    if string.find(str, substring, 1, true) then
+function assert_contains(str, substring, message)
+    if string.find(str, substring, 1, true) != nil then
         return true
     else
         error(string.format("%s: '%s' not found in '%s'", message or "Assertion failed", substring, str))
     end
 end
 
-local function run_test(name, test_fn)
+function run_test(name, test_fn)
     io.write(string.format("  [TEST] %s ... ", name))
-    local success, err = pcall(test_fn)
+    success, err = pcall(test_fn)
     if success then
         print("PASS")
         passed = passed + 1
@@ -73,13 +73,13 @@ local function run_test(name, test_fn)
     end
 end
 
-local function skip_test(name, reason)
+function skip_test(name, reason)
     io.write(string.format("  [SKIP] %s ... ", name))
     print("SKIPPED" .. (reason and (" - " .. reason) or ""))
     skipped = skipped + 1
 end
 
-local function print_summary()
+function print_summary()
     print("\n" .. string.rep("=", 60))
     print(string.format("Results: %d passed, %d failed, %d skipped", passed, failed, skipped))
     print(string.rep("=", 60))

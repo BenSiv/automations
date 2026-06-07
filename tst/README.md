@@ -1,27 +1,27 @@
-# lua-automations Tests
+# lua-automations Tests (luam edition)
 
-Test suite for the lua-automations repository.
+Test suite for the lua-automations repository, using the `luam` dialect.
 
 ## Running Tests
 
 ```bash
 # Run all tests
-./tests/run_all.sh
+./tst/run_all.sh
 
 # Run individual test files
-lua tests/test_repo.lua
-lua tests/test_find.lua
-lua tests/test_readdir.lua
+luam tst/test_repo.lua
+luam tst/test_find.lua
+luam tst/test_readdir.lua
 ```
 
 ## Test Files
 
-| File | Description | Tests |
-|------|-------------|-------|
-| `test_framework.lua` | Simple assertion-based test framework | - |
-| `test_repo.lua` | Tests for git automation (sync, pre-commit) | 14 |
-| `test_find.lua` | Tests for grep-based file search | 5 |
-| `test_readdir.lua` | Tests for directory listing | 4 |
+| File | Description |
+|------|-------------|
+| `test_framework.lua` | Simple assertion-based test framework |
+| `test_repo.lua` | Tests for git automation (sync, pre-commit) |
+| `test_find.lua` | Tests for grep-based file search |
+| `test_readdir.lua` | Tests for directory listing |
 
 ## Test Framework
 
@@ -39,8 +39,8 @@ The test framework (`test_framework.lua`) provides:
 
 ## Adding New Tests
 
-1. Create a new file `tests/test_<module>.lua`
-2. Import the framework: `local tests = require("test_framework")`
+1. Create a new file `tst/test_<module>.lua`
+2. Import the framework: `tests = require("test_framework")`
 3. Define test suites with `print("\n[SUITE] ...")`
 4. Add tests with `tests.run_test("name", function() ... end)`
 5. Call `tests.print_summary()` at the end

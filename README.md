@@ -1,6 +1,6 @@
-# lua-automations
+# lua-automations (luam edition)
 
-A collection of Lua scripts for automating common development tasks.
+A collection of automation scripts migrated to the `luam` dialect.
 
 ## Structure
 
@@ -17,11 +17,21 @@ lua-automations/
 
 ```bash
 # Run a script
-lua src/repo.lua --help
+luam src/repo.lua --help
 
 # Run tests
 ./tst/run_all.sh
 ```
+
+## Migration Notes
+
+This project has been migrated from Lua 5.1 to the `luam` dialect.
+Key changes:
+- `local` keyword is removed.
+- Inequality operator is `!=` (formerly `~=`).
+- Multiline strings use `""" ... """` (formerly `[[ ... ]]`).
+- Colon syntax for method calls (e.g., `s:gsub(...)`) is replaced with explicit function calls (e.g., `string.gsub(s, ...)`).
+- Conditional statements require explicit boolean values.
 
 ## Available Commands
 
