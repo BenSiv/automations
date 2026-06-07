@@ -1,6 +1,6 @@
 # automations (luam edition)
 
-A collection of automation scripts migrated to the `luam` dialect.
+A collection of automation scripts using the `luam` language.
 
 ## Structure
 
