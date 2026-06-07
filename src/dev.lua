@@ -1,5 +1,5 @@
 -- connect to docker container
-package.path = "/home/bensiv/Projects/lua-automations/src/?.lua;" .. package.path
+package.path = "/home/bensiv/Projects/automations/src/?.lua;" .. package.path
 require("utils").using("utils")
 
 function main()

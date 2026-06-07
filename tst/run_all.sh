@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run all tests for lua-automations
+# Run all tests for automations
 # Usage: ./tst/run_all.sh
 
 set -e
@@ -10,7 +10,7 @@ cd "$(dirname "$0")/.."
 export LUA_PATH="$HOME/Projects/luam/lib/?.lua;;"
 
 echo "============================================================"
-echo "Running lua-automations test suite (using luam)"
+echo "Running automations test suite (using luam)"
 echo "============================================================"
 
 # Track overall results

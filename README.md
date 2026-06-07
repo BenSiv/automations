@@ -1,11 +1,11 @@
-# lua-automations (luam edition)
+# automations (luam edition)
 
 A collection of automation scripts migrated to the `luam` dialect.
 
 ## Structure
 
 ```
-lua-automations/
+automations/
 ├── src/          # Source files
 ├── tst/          # Test suite
 ├── doc/          # Documentation

@@ -146,8 +146,8 @@ end)
 
 tests.run_test("repo.lua commit without args shows git status", function()
     output, _ = exec_command("luam src/repo.lua commit 2>&1")
-    has_branch = (string.find(output, "branch") != nil) or (string.find(output, "Branch") != nil)
-    tests.assert_true(has_branch, "Should show git status with branch info")
+    has_branch = (string.find(output, "branch") != nil) or (string.find(output, "Branch") != nil) or (string.find(output, "detached at") != nil)
+    tests.assert_true(has_branch, "Should show git status with branch or detached HEAD info")
 end)
 
 --------------------------------------------------------------------------------
@@ -168,8 +168,8 @@ print("\n[SUITE] Pre-commit Hook Functionality")
 
 tests.run_test("repo.lua commit without args shows git status", function()
     output, _ = exec_command("luam src/repo.lua commit 2>&1")
-    has_branch = (string.find(output, "branch") != nil) or (string.find(output, "Branch") != nil)
-    tests.assert_true(has_branch, "Should show git status with branch info")
+    has_branch = (string.find(output, "branch") != nil) or (string.find(output, "Branch") != nil) or (string.find(output, "detached at") != nil)
+    tests.assert_true(has_branch, "Should show git status with branch or detached HEAD info")
 end)
 
 --------------------------------------------------------------------------------

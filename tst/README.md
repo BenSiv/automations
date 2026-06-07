@@ -1,6 +1,6 @@
-# lua-automations Tests (luam edition)
+# automations Tests (luam edition)
 
-Test suite for the lua-automations repository, using the `luam` dialect.
+Test suite for the automations repository, using the `luam` dialect.
 
 ## Running Tests
 

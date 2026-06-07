@@ -1,4 +1,4 @@
--- Test framework for lua-automations
+-- Test framework for automations
 -- Simple assertion-based testing
 
 require("utils").using("utils")
