@@ -44,7 +44,7 @@ Key changes:
 | `open.lua` | Open file with default program |
 | `view.lua` | View delimited file as table |
 | `dev.lua` | Connect to development container |
-| `arch.lua` | Arch Linux package manager wrapper |
+| `pkg.lua` | Distribution-agnostic package manager wrapper |
 
 See [doc/](doc/) for detailed usage documentation.
 
